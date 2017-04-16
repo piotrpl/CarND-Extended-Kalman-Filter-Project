@@ -73,7 +73,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     // first measurement
     cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
-    //ekf_.x_ << 1, 1, 1, 1;
+    ekf_.x_ << .1, .1, .1, .1;
 
     previous_timestamp_ = measurement_pack.timestamp_;
 
@@ -88,11 +88,20 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       float y = rho * sin(phi);
       float vx = rho_dot * cos(phi);
       float vy = rho_dot * sin(phi);
+
+      if (x == 0 or y == 0){
+        return;
+      }
+
       ekf_.x_ << x, y, vx, vy;
     } else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       /**
       Initialize state.
       */
+      if (measurement_pack.raw_measurements_(0, 0) == 0 or measurement_pack.raw_measurements_(1, 0) == 0){
+        return;
+      }
+
       ekf_.x_ << measurement_pack.raw_measurements_(0, 0), measurement_pack.raw_measurements_(1, 0), 0.0, 0.0;
     }
 
